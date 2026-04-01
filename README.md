@@ -1,3 +1,28 @@
+# torch_npu API UT 生成与执行流程
+
+```mermaid
+flowchart TD
+	A["用户请求生成 torch_npu API UT"] --> B{用户是否指定API类别?}
+	B -- 否 --> B1["主动询问用户API类别, 停止流程等待"]
+	B -- 是 --> C["确认API全名和类别"]
+	C --> D["查阅PyTorch API签名和参数"]
+	D --> E["查阅NPU适配层 transfer_to_npu.py"]
+	E --> F["查阅现有测试(ascend_pytorch/test, pytorch/test)"]
+	F --> G["生成测试文件: test/{api_full_name_underscored}/test_{api_full_name_underscored}.py"]
+	G --> H["补充头部注释(中文模板+覆盖维度表)"]
+	H --> I["实现unittest风格TestCase, setUp检查设备"]
+	I --> J["用例设计: 参数全覆盖, 结构/类型断言, 禁止数值精度断言"]
+	J --> K["多卡用例加@skipIfUnsupportMultiNPU"]
+	K --> L["文件末尾加run_tests()"]
+	L --> M["询问用户是否执行UT"]
+	M -- 否 --> M1["流程结束"]
+	M -- 是 --> N["执行UT"]
+	N --> O{UT是否全部通过?}
+	O -- 否 --> P["仅修改test/下文件, 修复并重试"]
+	P --> N
+	O -- 是 --> Q["生成/更新UT报告(UT_REPORT.md/UT_EXECUTION_REPORT.md)"]
+	Q --> R["流程结束"]
+```
 # torch-distributed-ut-generator
 
 自动化生成 PyTorch 分布式及相关 API 的功能单元测试用例，专为华为昇腾 NPU (`torch_npu`) 环境设计，与 `ascend_pytorch` 测试风格保持一致。
@@ -146,6 +171,9 @@ python -m unittest discover -v
 |------|------|
 | [SKILL.md](.cursor/skills/gen-torch-npu-api-ut/SKILL.md) | 主要技能文档：UT 生成规范、文件格式、用例设计原则 |
 | [DISTRIBUTED_API_UT.md](.cursor/skills/gen-torch-npu-api-ut/references/DISTRIBUTED_API_UT.md) | 分布式 API 测试补充规范：多卡测试策略、HCCL 模板、自检清单 |
+
+## 运行截图
+![UT Execution Screenshot](imgs/image.png)
 
 ## 贡献与开发
 
