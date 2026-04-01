@@ -1,3 +1,2 @@
 # pytorch、ascend_pytorch 为 git submodule，勿在此忽略（否则无法 submodule add）
-ascend-pytorch/
 **__pycache__**
